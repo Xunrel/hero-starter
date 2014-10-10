@@ -92,16 +92,38 @@ var move = function(gameData, helpers) {
   var distanceToHealthWell = healthWellStats.distance;
   var directionToHealthWell = healthWellStats.direction;
   
-
+  var myEnemy = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+	return boardTile.type === 'Hero' && boardTile.team !== myHero.team;
+  });
+  var myEnemyDistance = myEnemy.distance;
+  var myEnemyDirection = myEnemy.direction;
+  
+  var myMine = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+    if (boardTile.type === 'DiamondMine') {
+      if (boardTile.owner) {
+        return boardTile.owner.team !== myHero.team;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  });
+  var myMineDistance = myMine.distance;
+  var myMineDirection = myMine.direction;
+  
   if (myHero.health < 40) {
     //Heal no matter what if low health
     return directionToHealthWell;
-  } else if (myHero.health < 100 && distanceToHealthWell === 1) {
+  } else if (myHero.health < 60) {
     //Heal if you aren't full health and are close to a health well already
     return directionToHealthWell;
   } else {
-    //If healthy, go capture a diamond mine!
-    return helpers.findNearestNonTeamDiamondMine(gameData);
+	if (myEnemyDistance < myMineDistance) {
+		return myEnemyDirection;
+	}
+	//If healthy, go capture a diamond mine!
+	return helpers.findNearestNonTeamDiamondMine(gameData);
   }
 };
 
